@@ -1,10 +1,10 @@
 #include <Adafruit_NeoPixel.h>
 
 // config for wiring harness
-#define leftPin       D6
-#define rightPin      D7
-#define reversePin    D5
-#define brakePin      D2
+#define leftPin       12
+#define rightPin      13
+#define reversePin    14
+#define brakePin       4
 
 // config for LED strip
 #define ledPin        D1
@@ -19,12 +19,18 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ8
 float pixelSize = 1.0;    // the physical distance that each LED represents in cm
 
 // general config
+#define turnTimeout 1050
+unsigned long leftTime = 0;
+unsigned long rightTime = 0;
 int leftPosition = -1;
 int rightPosition = -1;
 
 // Arduino setup function. Runs in CPU 1
 void setup()
 {
+  Serial.begin(115200);
+  Serial.println("Starting golf lights...");
+
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
@@ -59,8 +65,9 @@ void processPixels()
   {
     pixels.fill(REVERSE_COLOR, 0, pixels.numPixels());
   }
+  // Serial.printf("millis: %lu  leftTime: %lu  rightTime: %lu\n", millis(), leftTime, rightTime);
   // check for left turn
-  if (isPinHigh(leftPin))
+  if (isPinHigh(leftPin) || isTurning(leftTime))
   {
     rightPosition = -1;
     for (int position = 0; position < pixels.numPixels()/2; position++)
@@ -74,7 +81,7 @@ void processPixels()
     }
   }
   // check for right turn
-  if (isPinHigh(rightPin))
+  if (isPinHigh(rightPin) || isTurning(rightTime))
   {
     leftPosition = -1;
     for (int position = 0; position < pixels.numPixels()/2; position++)
@@ -93,7 +100,24 @@ void processPixels()
 
 bool isPinHigh(int pin)
 {
-  return digitalRead(pin) == HIGH;
+  bool result = (digitalRead(pin) == HIGH);
+  if (result)
+  {
+    if (pin == leftPin)
+    {
+      leftTime = millis();
+    }
+    else if (pin == rightPin)
+    {
+      rightTime = millis();
+    }
+  }
+  return result;
+}
+
+bool isTurning(unsigned long turnTime)
+{
+  return millis() > turnTimeout && millis() - turnTime < turnTimeout;
 }
 
 void runningLEDs()
