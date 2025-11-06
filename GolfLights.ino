@@ -1,17 +1,17 @@
 #include <Adafruit_NeoPixel.h>
 
 // config for wiring harness
-#define leftPin       PA1
-#define rightPin      PA2
-#define reversePin    PA3
-#define brakePin      PA4
+#define leftPin       D6
+#define rightPin      D7
+#define reversePin    D5
+#define brakePin      D2
 
 // config for LED strip
-#define ledPin        PA0
+#define ledPin        D1
 #define numLEDs       36  // number of LEDs used in strip, needs to be an even number
-#define maxBright     128  // 0-255 max brightness; to prevent overcurrent, start low
+#define maxBright     255 // 0-255 max brightness; to prevent overcurrent, start low
 #define OFF_COLOR     pixels.Color(0, 0, 0)        // OFF
-#define IDLE_COLOR    pixels.Color(0, 0, 64)       // POWER ON
+#define IDLE_COLOR    pixels.Color(0, 64, 64)      // POWER ON
 #define STOP_COLOR    pixels.Color(255, 0, 0)      // RED
 #define TURN_COLOR    pixels.Color(255, 191, 0)    // YELLOW
 #define REVERSE_COLOR pixels.Color(128, 128, 128)  // WHITE
@@ -25,9 +25,6 @@ int rightPosition = -1;
 // Arduino setup function. Runs in CPU 1
 void setup()
 {
-  Serial.begin(74880);  // default baud rate for bootloader
-  Serial.printf("\n\nSMT32F103 startup...\n");
-
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
@@ -91,7 +88,7 @@ void processPixels()
     }
   }
   pixels.show();
-  delay(2000/pixels.numPixels());
+  delay(1000/pixels.numPixels());
 }
 
 bool isPinHigh(int pin)
