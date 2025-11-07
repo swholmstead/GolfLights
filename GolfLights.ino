@@ -14,7 +14,7 @@
 #define IDLE_COLOR    pixels.Color(0, 64, 64)      // POWER ON
 #define STOP_COLOR    pixels.Color(255, 0, 0)      // RED
 #define TURN_COLOR    pixels.Color(255, 191, 0)    // YELLOW
-#define REVERSE_COLOR pixels.Color(128, 128, 128)  // WHITE
+#define REVERSE_COLOR pixels.Color(192, 192, 192)  // WHITE
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
 float pixelSize = 1.0;    // the physical distance that each LED represents in cm
 
@@ -69,7 +69,6 @@ void processPixels()
   // check for left turn
   if (isPinHigh(leftPin) || isTurning(leftTime))
   {
-    rightPosition = -1;
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
       pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition+1 ? TURN_COLOR : OFF_COLOR));
@@ -80,10 +79,13 @@ void processPixels()
       leftPosition = -1;
     }
   }
+  else
+  {
+    leftPosition = -1;
+  }
   // check for right turn
   if (isPinHigh(rightPin) || isTurning(rightTime))
   {
-    leftPosition = -1;
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
       pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition+1 ? TURN_COLOR : OFF_COLOR));
@@ -93,6 +95,10 @@ void processPixels()
     {
       rightPosition = -1;
     }
+  }
+  else
+  {
+    rightPosition = -1;
   }
   pixels.show();
   delay(1000/pixels.numPixels());
