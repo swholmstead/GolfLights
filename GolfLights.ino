@@ -8,7 +8,7 @@
 
 // config for LED strip
 #define ledPin        D1
-#define numLEDs       36  // number of LEDs used in strip, needs to be an even number
+#define numLEDs       48  // number of LEDs used in strip, needs to be an even number
 #define maxBright     255 // 0-255 max brightness; to prevent overcurrent, start low
 #define OFF_COLOR     pixels.Color(0, 0, 0)        // OFF
 #define IDLE_COLOR    pixels.Color(0, 64, 64)      // POWER ON
