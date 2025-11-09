@@ -14,7 +14,6 @@
 #define ledPin        D1
 #define numLEDs       48  // number of LEDs used in strip, needs to be an even number
 #define maxBright     255 // 0-255 max brightness; to prevent overcurrent, start low
-#define OFF_COLOR     pixels.Color(0, 0, 0) // OFF
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
 float pixelSize = 1.0;    // the physical distance that each LED represents in cm
 unsigned long idleColor;
@@ -87,17 +86,20 @@ void loop()
 
 void processPixels()
 {
+  unsigned long backColor = idleColor;
   // default
   pixels.fill(idleColor, 0, pixels.numPixels());
   // check for brakes
   if (isPinHigh(brakePin))
   {
     pixels.fill(stopColor, 0, pixels.numPixels());
+    backColor = stopColor;
   }
   // check for reverse
   if (isPinHigh(reversePin))
   {
     pixels.fill(reverseColor, 0, pixels.numPixels());
+    backColor = reverseColor;
   }
   // Serial.printf("millis: %lu  leftTime: %lu  rightTime: %lu\n", millis(), leftTime, rightTime);
   // check for left turn
@@ -105,7 +107,7 @@ void processPixels()
   {
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
-      pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition+1 ? turnColor : OFF_COLOR));
+      pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition+1 ? turnColor : backColor));
     }
     leftPosition++;
     if (leftPosition >= pixels.numPixels()/2 - 1)
@@ -122,7 +124,7 @@ void processPixels()
   {
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
-      pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition+1 ? turnColor : OFF_COLOR));
+      pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition+1 ? turnColor : backColor));
     }
     rightPosition++;
     if (rightPosition >= pixels.numPixels()/2 - 1)
