@@ -211,8 +211,6 @@ void handleSave()
   EEPROM.put(12, reverseColor);
   EEPROM.commit();
   // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
-
-  server.send(200, "text/plain", "Colors saved!");
 }
 
 unsigned long extractHex(const String& json, const String& key)

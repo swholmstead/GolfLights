@@ -68,25 +68,21 @@ char index_html[] PROGMEM = R"rawliteral(
     <div class="light-control" style="border-left-color: #ff0000;">
       <label for="brakes">Brake lights</label>
       <input type="color" id="brakes" value="#ff0000" />
-      <div class="preview" id="brakes-preview" style="background:#ff0000;"></div>
     </div>
 
     <div class="light-control" style="border-left-color: #c0c0c0;">
       <label for="reverse">Reverse lights</label>
       <input type="color" id="reverse" value="#c0c0c0" />
-      <div class="preview" id="reverse-preview" style="background:#c0c0c0;"></div>
     </div>
 
     <div class="light-control" style="border-left-color: #ffbf00;">
       <label for="turn">Turn signal</label>
       <input type="color" id="turn" value="#ffbf00" />
-      <div class="preview" id="turn-preview" style="background:#ffbf00;"></div>
     </div>
 
     <div class="light-control" style="border-left-color: #008080;">
       <label for="running">Running lights</label>
       <input type="color" id="running" value="#008080" />
-      <div class="preview" id="running-preview" style="background:#008080;"></div>
     </div>
 
     <button class="btn" onclick="save()">Save Colors</button>
@@ -94,14 +90,6 @@ char index_html[] PROGMEM = R"rawliteral(
   </div>
 
   <script>
-    // Update preview boxes when color changes
-    document.querySelectorAll('input[type="color"]').forEach(input => {
-      input.addEventListener('input', function() {
-        const preview = document.getElementById(this.id + '-preview');
-        preview.style.background = this.value;
-      });
-    });
-
     function save() {
       const data = {
         brakes:  document.getElementById('brakes').value,
@@ -123,20 +111,7 @@ char index_html[] PROGMEM = R"rawliteral(
       document.getElementById('reverse').value = '#c0c0c0';
       document.getElementById('turn').value = '#ffbf00';
       document.getElementById('running').value = '#008080';
-
-      updatePreviews();
     }
-
-    // Initial preview update
-    function updatePreviews() {
-      document.querySelectorAll('input[type="color"]').forEach(input => {
-        const preview = document.getElementById(input.id + '-preview');
-        preview.style.background = input.value;
-      });
-    }
-
-    // Run on load
-    updatePreviews();
   </script>
 
 </body>
