@@ -1,4 +1,8 @@
 #include <Adafruit_NeoPixel.h>
+#include <EEPROM.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include "golf_lights_html.h"
 
 // config for wiring harness
 #define leftPin       12
@@ -10,13 +14,22 @@
 #define ledPin        D1
 #define numLEDs       48  // number of LEDs used in strip, needs to be an even number
 #define maxBright     255 // 0-255 max brightness; to prevent overcurrent, start low
-#define OFF_COLOR     pixels.Color(0, 0, 0)        // OFF
-#define IDLE_COLOR    pixels.Color(0, 64, 64)      // POWER ON
-#define STOP_COLOR    pixels.Color(255, 0, 0)      // RED
-#define TURN_COLOR    pixels.Color(255, 191, 0)    // YELLOW
-#define REVERSE_COLOR pixels.Color(192, 192, 192)  // WHITE
+#define OFF_COLOR     pixels.Color(0, 0, 0) // OFF
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
 float pixelSize = 1.0;    // the physical distance that each LED represents in cm
+unsigned long idleColor;
+unsigned long stopColor;
+unsigned long turnColor;
+unsigned long reverseColor;
+
+// WiFi config
+const char* ssid = "GolfCart";
+const char* password = "admin";
+IPAddress local_IP(192, 168, 4, 1);
+IPAddress gateway(192, 168, 4, 1);
+IPAddress subnet(255, 255, 255,0);
+ESP8266WebServer server(80);
+bool connected = false;
 
 // general config
 #define turnTimeout 1050
@@ -31,6 +44,13 @@ void setup()
   Serial.begin(115200);
   Serial.println("Starting golf lights...");
 
+  EEPROM.begin(sizeof(idleColor) * 4);
+  EEPROM.get(0, idleColor);
+  EEPROM.get(4, stopColor);
+  EEPROM.get(8, turnColor);
+  EEPROM.get(12, reverseColor);
+  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
@@ -41,29 +61,47 @@ void setup()
   pixels.begin();
   pixels.setBrightness(maxBright);
   // runningLEDs();
-  pixels.fill(IDLE_COLOR, 0, pixels.numPixels());
+  pixels.fill(idleColor, 0, pixels.numPixels());
   pixels.show();
+
+  delay(1000);
+  if (WiFi.softAPConfig(local_IP, gateway, subnet))
+  {
+    WiFi.softAP(ssid, password);
+    Serial.printf("Access Point started, SSID: %s AP: ", ssid);
+    Serial.println(WiFi.softAPIP());
+    server.on("/", HTTP_GET, handleRoot);
+    server.on("/save", HTTP_POST, handleSave);
+    server.begin();
+  }
+  else
+  {
+    Serial.println("AP Config failed.");
+  }
+  // WiFi.mode(WIFI_STA);
+  // WiFi.begin(ssid, password);
 }
 
 // Arduino loop function. Runs in CPU 1.
 void loop()
 {
   processPixels();
+  server.handleClient();
 }
 
 void processPixels()
 {
   // default
-  pixels.fill(IDLE_COLOR, 0, pixels.numPixels());
+  pixels.fill(idleColor, 0, pixels.numPixels());
   // check for brakes
   if (isPinHigh(brakePin))
   {
-    pixels.fill(STOP_COLOR, 0, pixels.numPixels());
+    pixels.fill(stopColor, 0, pixels.numPixels());
   }
   // check for reverse
   if (isPinHigh(reversePin))
   {
-    pixels.fill(REVERSE_COLOR, 0, pixels.numPixels());
+    pixels.fill(reverseColor, 0, pixels.numPixels());
   }
   // Serial.printf("millis: %lu  leftTime: %lu  rightTime: %lu\n", millis(), leftTime, rightTime);
   // check for left turn
@@ -71,7 +109,7 @@ void processPixels()
   {
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
-      pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition+1 ? TURN_COLOR : OFF_COLOR));
+      pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition+1 ? turnColor : OFF_COLOR));
     }
     leftPosition++;
     if (leftPosition >= pixels.numPixels()/2 - 1)
@@ -88,7 +126,7 @@ void processPixels()
   {
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
-      pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition+1 ? TURN_COLOR : OFF_COLOR));
+      pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition+1 ? turnColor : OFF_COLOR));
     }
     rightPosition++;
     if (rightPosition >= pixels.numPixels()/2 - 1)
@@ -142,4 +180,50 @@ void runningLEDs()
   }
   pixels.clear();
   pixels.show();
+}
+
+void handleRoot()
+{
+  server.sendHeader("Cache-Control", "no-cache");
+  server.send_P(200, "text/html", index_html);
+}
+
+void handleSave()
+{
+  if (server.method() != HTTP_POST)
+  {
+    server.send(405, "text/plain", "Method Not Allowed");
+    return;
+  }
+
+  String body = server.arg("plain");
+  if (body.indexOf("running") > 0)
+    idleColor = extractHex(body, "running");
+  if (body.indexOf("brakes") > 0)
+    stopColor = extractHex(body, "brakes");
+  if (body.indexOf("turn") > 0)
+    turnColor = extractHex(body, "turn");
+  if (body.indexOf("reverse") > 0)
+    reverseColor = extractHex(body, "reverse");
+  EEPROM.put(0, idleColor);
+  EEPROM.put(4, stopColor);
+  EEPROM.put(8, turnColor);
+  EEPROM.put(12, reverseColor);
+  EEPROM.commit();
+  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+
+  server.send(200, "text/plain", "Colors saved!");
+}
+
+unsigned long extractHex(const String& json, const String& key)
+{
+  int start = json.indexOf("\"" + key + "\":\"#");
+  if (start == -1)
+    return 0x000000;
+  start += key.length() + 5;
+  String result = json.substring(start, start + 7);
+  if (result.startsWith("#"))
+    result.remove(0, 1);
+
+  return strtoul(result.c_str(), nullptr, 16);
 }

@@ -1,15 +1,16 @@
+char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vehicle Light Color Settings</title>
+  <title>Golf Cart Colors</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f4f4f4;
       padding: 20px;
-      max-width: 600px;
+      max-width: 350px;
       margin: 40px auto;
     }
     .container {
@@ -43,14 +44,7 @@
       border-radius: 6px;
       cursor: pointer;
     }
-    .preview {
-      width: 60px;
-      height: 40px;
-      border-radius: 6px;
-      margin-left: 10px;
-      border: 1px solid #ccc;
-    }
-    .reset-btn {
+    .btn {
       display: block;
       margin: 20px auto 0;
       padding: 10px 20px;
@@ -61,7 +55,7 @@
       cursor: pointer;
       font-size: 16px;
     }
-    .reset-btn:hover {
+    .btn:hover {
       background: #0056b3;
     }
   </style>
@@ -69,33 +63,34 @@
 <body>
 
   <div class="container">
-    <h1>Vehicle Light Color Settings</h1>
+    <h1>Golf Cart Colors</h1>
 
     <div class="light-control" style="border-left-color: #ff0000;">
-      <label for="brakes">Brakes</label>
+      <label for="brakes">Brake lights</label>
       <input type="color" id="brakes" value="#ff0000" />
       <div class="preview" id="brakes-preview" style="background:#ff0000;"></div>
     </div>
 
     <div class="light-control" style="border-left-color: #c0c0c0;">
-      <label for="reverse">Reverse</label>
-      <input type="color" id="reverse" value="#ffffff" />
+      <label for="reverse">Reverse lights</label>
+      <input type="color" id="reverse" value="#c0c0c0" />
       <div class="preview" id="reverse-preview" style="background:#c0c0c0;"></div>
     </div>
 
-    <div class="light-control" style="border-left-color: #ffc107;">
-      <label for="turn">Turn Signal</label>
-      <input type="color" id="turn" value="#ffc107" />
-      <div class="preview" id="turn-preview" style="background:#ffc107;"></div>
+    <div class="light-control" style="border-left-color: #ffbf00;">
+      <label for="turn">Turn signal</label>
+      <input type="color" id="turn" value="#ffbf00" />
+      <div class="preview" id="turn-preview" style="background:#ffbf00;"></div>
     </div>
 
-    <div class="light-control" style="border-left-color: #40e0d0;">
-      <label for="running">Running Lights</label>
-      <input type="color" id="running" value="#40e0d0" />
-      <div class="preview" id="running-preview" style="background:#40e0d0;"></div>
+    <div class="light-control" style="border-left-color: #008080;">
+      <label for="running">Running lights</label>
+      <input type="color" id="running" value="#008080" />
+      <div class="preview" id="running-preview" style="background:#008080;"></div>
     </div>
 
-    <button class="reset-btn" onclick="resetColors()">Reset to Defaults</button>
+    <button class="btn" onclick="save()">Save Colors</button>
+    <button class="btn" onclick="resetColors()">Reset to Defaults</button>
   </div>
 
   <script>
@@ -107,12 +102,27 @@
       });
     });
 
+    function save() {
+      const data = {
+        brakes:  document.getElementById('brakes').value,
+        reverse: document.getElementById('reverse').value,
+        turn:    document.getElementById('turn').value,
+        running: document.getElementById('running').value
+      };
+      fetch('/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      })
+      .then(r => r.text())
+      .then(alert);
+    }
     // Reset all to default colors
     function resetColors() {
       document.getElementById('brakes').value = '#ff0000';
-      document.getElementById('reverse').value = '#ffffff';
-      document.getElementById('turn').value = '#ffc107';
-      document.getElementById('running').value = '#40e0d0';
+      document.getElementById('reverse').value = '#c0c0c0';
+      document.getElementById('turn').value = '#ffbf00';
+      document.getElementById('running').value = '#008080';
 
       updatePreviews();
     }
@@ -131,3 +141,4 @@
 
 </body>
 </html>
+)rawliteral";
