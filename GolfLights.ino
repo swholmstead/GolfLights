@@ -23,13 +23,10 @@ unsigned long turnColor;
 unsigned long reverseColor;
 
 // WiFi config
-const char* ssid = "GolfCart";
-const char* password = "admin";
 IPAddress local_IP(192, 168, 4, 1);
 IPAddress gateway(192, 168, 4, 1);
 IPAddress subnet(255, 255, 255,0);
 ESP8266WebServer server(80);
-bool connected = false;
 
 // general config
 #define turnTimeout 1050
@@ -41,8 +38,8 @@ int rightPosition = -1;
 // Arduino setup function. Runs in CPU 1
 void setup()
 {
-  Serial.begin(115200);
-  Serial.println("Starting golf lights...");
+  Serial.begin(74880);
+  Serial.println("\n\nStarting golf lights...");
 
   EEPROM.begin(sizeof(idleColor) * 4);
   EEPROM.get(0, idleColor);
@@ -64,11 +61,10 @@ void setup()
   pixels.fill(idleColor, 0, pixels.numPixels());
   pixels.show();
 
-  delay(1000);
-  if (WiFi.softAPConfig(local_IP, gateway, subnet))
+  WiFi.mode(WIFI_AP);
+  if (WiFi.softAP("GolfCart") && WiFi.softAPConfig(local_IP, gateway, subnet))
   {
-    WiFi.softAP(ssid, password);
-    Serial.printf("Access Point started, SSID: %s AP: ", ssid);
+    Serial.printf("Access Point started, SSID: %s IP: ", WiFi.softAPSSID());
     Serial.println(WiFi.softAPIP());
     server.on("/", HTTP_GET, handleRoot);
     server.on("/save", HTTP_POST, handleSave);
