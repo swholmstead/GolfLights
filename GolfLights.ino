@@ -96,7 +96,7 @@ void processPixels()
     backColor = stopColor;
   }
   // check for reverse
-  if (isPinHigh(reversePin))
+  if (!isPinHigh(reversePin))
   {
     pixels.fill(reverseColor, 0, pixels.numPixels());
     backColor = reverseColor;
