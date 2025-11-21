@@ -75,14 +75,14 @@ char index_html[] PROGMEM = R"rawliteral(
       <input type="color" id="reverse" value="#c0c0c0" />
     </div>
 
-    <div class="light-control" style="border-left-color: #ffbf00;">
+    <div class="light-control" style="border-left-color: #ff7f00;">
       <label for="turn">Turn signal</label>
-      <input type="color" id="turn" value="#ffbf00" />
+      <input type="color" id="turn" value="#ff7f00" />
     </div>
 
-    <div class="light-control" style="border-left-color: #008080;">
+    <div class="light-control" style="border-left-color: #000080;">
       <label for="running">Running lights</label>
-      <input type="color" id="running" value="#008080" />
+      <input type="color" id="running" value="#000080" />
     </div>
 
     <button class="btn" onclick="save()">Save Colors</button>
@@ -109,8 +109,8 @@ char index_html[] PROGMEM = R"rawliteral(
     function resetColors() {
       document.getElementById('brakes').value = '#ff0000';
       document.getElementById('reverse').value = '#c0c0c0';
-      document.getElementById('turn').value = '#ffbf00';
-      document.getElementById('running').value = '#008080';
+      document.getElementById('turn').value = '#ff7f00';
+      document.getElementById('running').value = '#000080';
     }
   </script>
 

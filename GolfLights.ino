@@ -146,7 +146,7 @@ void processPixels()
     rightPosition = -1;
   }
   pixels.show();
-  delay(1000/pixels.numPixels());
+  delay(2000/pixels.numPixels());
 }
 
 bool isPinHigh(int pin)
