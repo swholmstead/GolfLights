@@ -9,6 +9,7 @@
 #define rightPin      13
 #define reversePin    14
 #define brakePin       4
+#define activeLowReverse 1
 
 // config for LED strip
 #define ledPin        D1
@@ -50,7 +51,11 @@ void setup()
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
+  #ifdef activeLowReverse
   pinMode(reversePin, INPUT_PULLUP); // active low
+  #else
+  pinMode(reversePin, INPUT);
+  #endif
   pinMode(brakePin, INPUT);
 
   // set up LED strip
@@ -96,7 +101,11 @@ void processPixels()
     backColor = stopColor;
   }
   // check for reverse
+  #ifdef activeLowReverse
   if (!isPinHigh(reversePin)) // active low
+  #else
+  if (isPinHigh(reversePin)) // active low
+  #endif
   {
     pixels.fill(reverseColor, 0, pixels.numPixels());
     backColor = reverseColor;
