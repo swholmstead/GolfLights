@@ -50,8 +50,7 @@ void setup()
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
-  pinMode(reversePin, INPUT);
-  // pinMode(reversePin, INPUT_PULLUP);
+  pinMode(reversePin, INPUT_PULLUP); // active low
   pinMode(brakePin, INPUT);
 
   // set up LED strip
@@ -97,7 +96,7 @@ void processPixels()
     backColor = stopColor;
   }
   // check for reverse
-  if (isPinHigh(reversePin))
+  if (!isPinHigh(reversePin)) // active low
   {
     pixels.fill(reverseColor, 0, pixels.numPixels());
     backColor = reverseColor;
