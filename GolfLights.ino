@@ -17,6 +17,7 @@
 #define maxBright     255 // 0-255 max brightness; to prevent overcurrent, start low
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
 float pixelSize = 1.0;    // the physical distance that each LED represents in cm
+#define blinkRate 450
 unsigned long idleColor;
 unsigned long stopColor;
 unsigned long turnColor;
@@ -29,9 +30,6 @@ IPAddress subnet(255, 255, 255,0);
 ESP8266WebServer server(80);
 
 // general config
-#define turnTimeout 1050
-unsigned long leftTime = 0;
-unsigned long rightTime = 0;
 int leftPosition = -1;
 int rightPosition = -1;
 
@@ -110,65 +108,40 @@ void processPixels()
     pixels.fill(reverseColor, 0, pixels.numPixels());
     backColor = reverseColor;
   }
-  // Serial.printf("millis: %lu  leftTime: %lu  rightTime: %lu\n", millis(), leftTime, rightTime);
   // check for left turn
-  if (isPinHigh(leftPin) || isTurning(leftTime))
+  if (isPinHigh(leftPin))
   {
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
       pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition+1 ? turnColor : backColor));
     }
     leftPosition++;
-    if (leftPosition >= pixels.numPixels()/2 - 1)
-    {
-      leftPosition = -1;
-    }
   }
   else
   {
     leftPosition = -1;
   }
   // check for right turn
-  if (isPinHigh(rightPin) || isTurning(rightTime))
+  if (isPinHigh(rightPin))
   {
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
       pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition+1 ? turnColor : backColor));
     }
     rightPosition++;
-    if (rightPosition >= pixels.numPixels()/2 - 1)
-    {
-      rightPosition = -1;
-    }
   }
   else
   {
     rightPosition = -1;
   }
   pixels.show();
-  delay(2000/pixels.numPixels());
+  delay(blinkRate/pixels.numPixels());
 }
 
 bool isPinHigh(int pin)
 {
   bool result = (digitalRead(pin) == HIGH);
-  if (result)
-  {
-    if (pin == leftPin)
-    {
-      leftTime = millis();
-    }
-    else if (pin == rightPin)
-    {
-      rightTime = millis();
-    }
-  }
   return result;
-}
-
-bool isTurning(unsigned long turnTime)
-{
-  return millis() > turnTimeout && millis() - turnTime < turnTimeout;
 }
 
 void runningLEDs()
