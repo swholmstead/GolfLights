@@ -51,6 +51,7 @@ void setup()
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
   pinMode(reversePin, INPUT);
+  // pinMode(reversePin, INPUT_PULLUP);
   pinMode(brakePin, INPUT);
 
   // set up LED strip
@@ -96,7 +97,7 @@ void processPixels()
     backColor = stopColor;
   }
   // check for reverse
-  if (!isPinHigh(reversePin))
+  if (isPinHigh(reversePin))
   {
     pixels.fill(reverseColor, 0, pixels.numPixels());
     backColor = reverseColor;
