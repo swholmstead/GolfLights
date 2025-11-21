@@ -111,6 +111,10 @@ void processPixels()
   // check for left turn
   if (isPinHigh(leftPin))
   {
+    if (leftPosition < -1)
+    {
+      leftPosition = -1;
+    }
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
       pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition+1 ? turnColor : backColor));
@@ -124,6 +128,10 @@ void processPixels()
   // check for right turn
   if (isPinHigh(rightPin))
   {
+    if (RightPosition < -1)
+    {
+      rightPosition = -1;
+    }
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
       pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition+1 ? turnColor : backColor));
