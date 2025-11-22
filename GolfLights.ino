@@ -9,8 +9,8 @@
 #define rightPin      13
 #define reversePin    14
 #define brakePin       4
-// #define activeLowReverse 1
-#undef activeLowReverse
+#define activeLowReverse 1  // for Star EV
+// #undef activeLowReverse    // for Yamaha
 
 // config for LED strip
 #define ledPin        D1
