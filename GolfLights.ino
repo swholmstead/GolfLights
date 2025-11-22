@@ -18,7 +18,7 @@
 #define maxBright     255 // 0-255 max brightness; to prevent overcurrent, start low
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
 float pixelSize = 1.0;    // the physical distance that each LED represents in cm
-int blinkRate;
+int blinkRate = 300;
 unsigned long idleColor;
 unsigned long stopColor;
 unsigned long turnColor;
@@ -40,13 +40,12 @@ void setup()
   Serial.begin(74880);
   Serial.println("\n\nStarting golf lights...");
 
-  EEPROM.begin(sizeof(idleColor) * 4 + sizeof(blinkRate));
+  EEPROM.begin(sizeof(idleColor) * 4);
   EEPROM.get(0, idleColor);
   EEPROM.get(4, stopColor);
   EEPROM.get(8, turnColor);
   EEPROM.get(12, reverseColor);
-  EEPROM.get(16, blinkRate);
-  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx blinkRate: %d\n", idleColor, stopColor, turnColor, reverseColor, blinkRate);
+  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
 
   // set up wiring harness
   pinMode(leftPin, INPUT);
@@ -78,8 +77,6 @@ void setup()
   {
     Serial.println("AP Config failed.");
   }
-  // WiFi.mode(WIFI_STA);
-  // WiFi.begin(ssid, password);
 }
 
 // Arduino loop function. Runs in CPU 1.
@@ -187,15 +184,12 @@ void handleSave()
     turnColor = extractHex(body, "turn");
   if (body.indexOf("reverse") > 0)
     reverseColor = extractHex(body, "reverse");
-  if (body.indexOf("blinkrate") > 0)
-    blinkRate = extractInt(body, "blinkrate");
   EEPROM.put(0, idleColor);
   EEPROM.put(4, stopColor);
   EEPROM.put(8, turnColor);
   EEPROM.put(12, reverseColor);
-  EEPROM.put(16, blinkRate);
   EEPROM.commit();
-  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx blinkRate: %d\n", idleColor, stopColor, turnColor, reverseColor, blinkRate);
+  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
 }
 
 unsigned long extractHex(const String& json, const String& key)

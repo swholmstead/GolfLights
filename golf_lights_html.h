@@ -44,27 +44,6 @@ char index_html[] PROGMEM = R"rawliteral(
       border-radius: 6px;
       cursor: pointer;
     }
-    .blink-control {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 15px 0;
-      padding: 10px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      border-left: 5px solid;
-    }
-    .blink-control label {
-      font-weight: bold;
-      flex: 1;
-    }
-    .blink-control input[type="text"] {
-      width: 40px;
-      height: 30px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
     .btn {
       display: block;
       margin: 20px auto 0;
@@ -106,11 +85,6 @@ char index_html[] PROGMEM = R"rawliteral(
       <input type="color" id="running" value="#000080" />
     </div>
 
-    <div class="blink-control" style="border-left-color: #00ff00;">
-      <label for="blinkrate">Blink rate</label>
-      <input type="text" inputmode="number" font-size="16px" id="blinkrate" name="blinkrate" step="1" min="1" value="900" />
-    </div>
-
     <button class="btn" onclick="save()">Save Settings</button>
     <button class="btn" onclick="resetColors()">Reset to Defaults</button>
   </div>
@@ -122,7 +96,6 @@ char index_html[] PROGMEM = R"rawliteral(
         reverse: document.getElementById('reverse').value,
         turn:    document.getElementById('turn').value,
         running: document.getElementById('running').value,
-        blinkrate: document.getElementById('blinkrate').value
       };
       fetch('/save', {
         method: 'POST',
@@ -138,7 +111,6 @@ char index_html[] PROGMEM = R"rawliteral(
       document.getElementById('reverse').value = '#c0c0c0';
       document.getElementById('turn').value = '#ff7f00';
       document.getElementById('running').value = '#000080';
-      document.getElementById('blinkrate').value = '900';
     }
   </script>
 
