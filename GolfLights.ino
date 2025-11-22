@@ -9,7 +9,8 @@
 #define rightPin      13
 #define reversePin    14
 #define brakePin       4
-#define activeLowReverse 1
+// #define activeLowReverse 1
+#undef activeLowReverse
 
 // config for LED strip
 #define ledPin        D1
@@ -17,7 +18,7 @@
 #define maxBright     255 // 0-255 max brightness; to prevent overcurrent, start low
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
 float pixelSize = 1.0;    // the physical distance that each LED represents in cm
-#define blinkRate 450
+int blinkRate;
 unsigned long idleColor;
 unsigned long stopColor;
 unsigned long turnColor;
@@ -30,8 +31,8 @@ IPAddress subnet(255, 255, 255,0);
 ESP8266WebServer server(80);
 
 // general config
-int leftPosition = -1;
-int rightPosition = -1;
+unsigned int leftPosition = 0;
+unsigned int rightPosition = 0;
 
 // Arduino setup function. Runs in CPU 1
 void setup()
@@ -39,12 +40,13 @@ void setup()
   Serial.begin(74880);
   Serial.println("\n\nStarting golf lights...");
 
-  EEPROM.begin(sizeof(idleColor) * 4);
+  EEPROM.begin(sizeof(idleColor) * 4 + sizeof(blinkRate));
   EEPROM.get(0, idleColor);
   EEPROM.get(4, stopColor);
   EEPROM.get(8, turnColor);
   EEPROM.get(12, reverseColor);
-  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+  EEPROM.get(16, blinkRate);
+  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx blinkRate: %d\n", idleColor, stopColor, turnColor, reverseColor, blinkRate);
 
   // set up wiring harness
   pinMode(leftPin, INPUT);
@@ -111,36 +113,28 @@ void processPixels()
   // check for left turn
   if (isPinHigh(leftPin))
   {
-    if (leftPosition < -1)
-    {
-      leftPosition = -1;
-    }
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
-      pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition+1 ? turnColor : backColor));
+      pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition ? turnColor : backColor));
     }
     leftPosition++;
   }
   else
   {
-    leftPosition = -1;
+    leftPosition = 0;
   }
   // check for right turn
   if (isPinHigh(rightPin))
   {
-    if (RightPosition < -1)
-    {
-      rightPosition = -1;
-    }
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
-      pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition+1 ? turnColor : backColor));
+      pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition ? turnColor : backColor));
     }
     rightPosition++;
   }
   else
   {
-    rightPosition = -1;
+    rightPosition = 0;
   }
   pixels.show();
   delay(blinkRate/pixels.numPixels());
@@ -193,12 +187,15 @@ void handleSave()
     turnColor = extractHex(body, "turn");
   if (body.indexOf("reverse") > 0)
     reverseColor = extractHex(body, "reverse");
+  if (body.indexOf("blinkrate") > 0)
+    blinkRate = extractInt(body, "blinkrate");
   EEPROM.put(0, idleColor);
   EEPROM.put(4, stopColor);
   EEPROM.put(8, turnColor);
   EEPROM.put(12, reverseColor);
+  EEPROM.put(16, blinkRate);
   EEPROM.commit();
-  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx blinkRate: %d\n", idleColor, stopColor, turnColor, reverseColor, blinkRate);
 }
 
 unsigned long extractHex(const String& json, const String& key)
@@ -212,4 +209,15 @@ unsigned long extractHex(const String& json, const String& key)
     result.remove(0, 1);
 
   return strtoul(result.c_str(), nullptr, 16);
+}
+
+int extractInt(const String& json, const String& key)
+{
+  int start = json.indexOf("\"" + key + "\":\"");
+  if (start == -1)
+    return 0;
+  start += key.length() + 4;
+  String result = json.substring(start, start + 7);
+  unsigned long value = strtoul(result.c_str(), nullptr, 10);
+  return value;
 }
