@@ -9,8 +9,8 @@
 #define rightPin      13
 #define reversePin    14
 #define brakePin       4
-#define activeLowReverse 1  // for Star EV
-// #undef activeLowReverse    // for Yamaha
+// #define activeLowReverse 1  // for Star EV
+#undef activeLowReverse    // for Yamaha
 
 // config for LED strip
 #define ledPin        D1
@@ -108,7 +108,7 @@ void processPixels()
     backColor = reverseColor;
   }
   // check for left turn
-  if (isPinHigh(leftPin))
+  if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= pixels.numPixels()))
   {
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
@@ -121,7 +121,7 @@ void processPixels()
     leftPosition = 0;
   }
   // check for right turn
-  if (isPinHigh(rightPin))
+  if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition <= pixels.numPixels()))
   {
     for (int position = 0; position < pixels.numPixels()/2; position++)
     {
