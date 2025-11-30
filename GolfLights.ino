@@ -46,6 +46,10 @@ void setup()
   EEPROM.get(8, turnColor);
   EEPROM.get(12, reverseColor);
   // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+  storeColor(index_html, "running", idleColor);
+  storeColor(index_html, "brakes", stopColor);
+  storeColor(index_html, "turn", turnColor);
+  storeColor(index_html, "reverse", reverseColor);
 
   // set up wiring harness
   pinMode(leftPin, INPUT);
@@ -77,6 +81,7 @@ void setup()
   {
     Serial.println("AP Config failed.");
   }
+  
 }
 
 // Arduino loop function. Runs in CPU 1.
@@ -164,7 +169,7 @@ void runningLEDs()
 void handleRoot()
 {
   server.sendHeader("Cache-Control", "no-cache");
-  server.send_P(200, "text/html", index_html);
+  server.send_P(200, "text/html", index_html.c_str());
 }
 
 void handleSave()
@@ -189,6 +194,10 @@ void handleSave()
   EEPROM.put(8, turnColor);
   EEPROM.put(12, reverseColor);
   EEPROM.commit();
+  storeColor(index_html, "running", idleColor);
+  storeColor(index_html, "brakes", stopColor);
+  storeColor(index_html, "turn", turnColor);
+  storeColor(index_html, "reverse", reverseColor);
   // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
 }
 
@@ -205,13 +214,14 @@ unsigned long extractHex(const String& json, const String& key)
   return strtoul(result.c_str(), nullptr, 16);
 }
 
-int extractInt(const String& json, const String& key)
+void storeColor(String& json, const String& key, unsigned long color)
 {
-  int start = json.indexOf("\"" + key + "\":\"");
+  int start = json.indexOf("id=\"" + key + "\"");
   if (start == -1)
-    return 0;
-  start += key.length() + 4;
-  String result = json.substring(start, start + 7);
-  unsigned long value = strtoul(result.c_str(), nullptr, 10);
-  return value;
+    return;
+  start += 14 + key.length();
+  json.remove(start, 6);
+  String hexColor = "00000000" + String(color, HEX);
+  hexColor = hexColor.substring(hexColor.length() - 6);
+  json = json.substring(0, start) + hexColor + json.substring(start);
 }

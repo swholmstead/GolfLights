@@ -1,4 +1,4 @@
-char index_html[] PROGMEM = R"rawliteral(
+String index_html = R"html(
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,7 +70,7 @@ char index_html[] PROGMEM = R"rawliteral(
       <input type="color" id="brakes" value="#ff0000" />
     </div>
 
-    <div class="light-control" style="border-left-color: #ffffff;">
+    <div class="light-control" style="border-left-color: #cfcfcf;">
       <label for="reverse">Reverse lights</label>
       <input type="color" id="reverse" value="#ffffff" />
     </div>
@@ -116,4 +116,4 @@ char index_html[] PROGMEM = R"rawliteral(
 
 </body>
 </html>
-)rawliteral";
+)html";
