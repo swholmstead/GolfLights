@@ -45,7 +45,11 @@ void setup()
   EEPROM.get(4, stopColor);
   EEPROM.get(8, turnColor);
   EEPROM.get(12, reverseColor);
-  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+  idleColor &= 0x00ffffff; // mask to 3 bytes
+  stopColor &= 0x00ffffff;
+  turnColor &= 0x00ffffff;
+  reverseColor &= 0x00ffffff;
+  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
   storeColor(index_html, "running", idleColor);
   storeColor(index_html, "brakes", stopColor);
   storeColor(index_html, "turn", turnColor);
@@ -198,7 +202,7 @@ void handleSave()
   storeColor(index_html, "brakes", stopColor);
   storeColor(index_html, "turn", turnColor);
   storeColor(index_html, "reverse", reverseColor);
-  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
 }
 
 unsigned long extractHex(const String& json, const String& key)
