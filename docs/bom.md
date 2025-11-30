@@ -28,5 +28,4 @@ If the links don't work, just search for the components from wherever you shop.
 * JST-XH MALE right angle connector 6 pin (qty 1)
 * 22 AWG 3 wire cable (1m/4ft) [Amazon](https://www.amazon.com/dp/B0DNJTMWGB) [AliExpress](https://www.aliexpress.us/item/3256809068712250.html)
 * 22 AWG 6 wire cable (300 cm/1ft)
-* 5V 3A DC power supply (qty 1) [Amazon](https://www.amazon.com/dp/B09NLMVXMZ) [AliExpress](https://www.aliexpress.us/item/3256806901002886.html)
-* M1.7 x 5mm self-tapping screws (qty 2) [Amazon](https://www.amazon.com/dp/B07GKXMSVR) [AliExpress](https://www.aliexpress.us/item/3256808546142529.html)
+* M2.6 x 5mm self-tapping screws (qty 2)
