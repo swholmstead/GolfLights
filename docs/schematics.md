@@ -13,3 +13,5 @@ It will automatically fill in most options once you have uploaded the file.  No 
 <img src="https://github.com/swholmstead/GolfLights/blob/main/pictures/schematic.png" alt="Schematic" width=800>
 <h2>Printed Circuit Board</h2>
 <img src="https://github.com/swholmstead/GolfLights/blob/main/pictures/PCB.png" alt="PCB" width=600>
+<h2>Wiring Chart</h2>
+<img src="https://github.com/swholmstead/GolfLights/blob/main/pictures/Wiring.png" alt="Wiring" width=400>
