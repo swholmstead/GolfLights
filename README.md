@@ -1,4 +1,6 @@
-<h1>Golf Lights Project</h1>
+<h1>Golf Cart Lights Project</h1>
+
+<img src="https://github.com/swholmstead/GolfLights/blob/main/pictures/HTML.png" alt="HTML" width=400>
 
 This is a DIY golf cart light bar that displays turn signals, brakes, reverse,
 and running lights on an LED light strip.
