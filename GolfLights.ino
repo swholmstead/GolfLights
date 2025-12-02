@@ -9,8 +9,8 @@
 #define rightPin      13
 #define reversePin    14
 #define brakePin       4
-// #define activeLowReverse 1  // for Star EV
-#undef activeLowReverse    // for Yamaha
+#define reverseActive isPinHigh(reversePin) // for Yamaha
+// #define reverseActive !isPinHigh(reversePin)   // for Star EV
 
 // config for LED strip
 #define ledPin        D1
@@ -38,7 +38,7 @@ unsigned int rightPosition = 0;
 void setup()
 {
   Serial.begin(74880);
-  Serial.println("\n\nStarting golf lights...");
+  Serial.printf("\n\nStarting golf lights  LED: %d\n", numLEDs);
 
   EEPROM.begin(sizeof(idleColor) * 4);
   EEPROM.get(0, idleColor);
@@ -107,11 +107,7 @@ void processPixels()
     backColor = stopColor;
   }
   // check for reverse
-  #ifdef activeLowReverse
-  if (!isPinHigh(reversePin)) // active low
-  #else
-  if (isPinHigh(reversePin)) // active low
-  #endif
+  if (reverseActive)
   {
     pixels.fill(reverseColor, 0, pixels.numPixels());
     backColor = reverseColor;
