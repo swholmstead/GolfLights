@@ -1,3 +1,7 @@
+// CONFIG PARAMETERS
+#define runningIdle 1 // add a running black pixel on idle
+// #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
+
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
@@ -9,8 +13,6 @@
 #define rightPin      13
 #define reversePin    14
 #define brakePin       4
-#define reverseActive isPinHigh(reversePin) // for Yamaha
-// #define reverseActive !isPinHigh(reversePin)   // for Star EV
 
 // config for LED strip
 #define ledPin        D1
@@ -33,6 +35,8 @@ ESP8266WebServer server(80);
 // general config
 unsigned int leftPosition = 0;
 unsigned int rightPosition = 0;
+unsigned int idlePosition = 0;
+int idleDirection = 1;
 
 // Arduino setup function. Runs in CPU 1
 void setup()
@@ -45,11 +49,11 @@ void setup()
   EEPROM.get(4, stopColor);
   EEPROM.get(8, turnColor);
   EEPROM.get(12, reverseColor);
-  idleColor &= 0x00ffffff; // mask to 3 bytes
-  stopColor &= 0x00ffffff;
-  turnColor &= 0x00ffffff;
+  idleColor    &= 0x00ffffff; // mask to 3 bytes
+  stopColor    &= 0x00ffffff;
+  turnColor    &= 0x00ffffff;
   reverseColor &= 0x00ffffff;
-  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
   storeColor(index_html, "running", idleColor);
   storeColor(index_html, "brakes", stopColor);
   storeColor(index_html, "turn", turnColor);
@@ -58,17 +62,16 @@ void setup()
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
-  #ifdef activeLowReverse
+#ifdef reverseActiveLow
   pinMode(reversePin, INPUT_PULLUP); // active low
-  #else
+#else
   pinMode(reversePin, INPUT);
-  #endif
+#endif
   pinMode(brakePin, INPUT);
 
   // set up LED strip
   pixels.begin();
   pixels.setBrightness(maxBright);
-  // runningLEDs();
   pixels.fill(idleColor, 0, pixels.numPixels());
   pixels.show();
 
@@ -100,6 +103,13 @@ void processPixels()
   unsigned long backColor = idleColor;
   // default
   pixels.fill(idleColor, 0, pixels.numPixels());
+#ifdef runningIdle
+  pixels.setPixelColor(idlePosition, 0x000000);
+  idlePosition += idleDirection;
+  if (idlePosition <= 0 || idlePosition >= pixels.numPixels() - 1)
+    idleDirection *= -1;
+#endif
+
   // check for brakes
   if (isPinHigh(brakePin))
   {
@@ -107,7 +117,11 @@ void processPixels()
     backColor = stopColor;
   }
   // check for reverse
-  if (reverseActive)
+#ifdef reverseActiveLow
+  if (!isPinHigh(reversePin))
+#else
+  if (isPinHigh(reversePin))
+#endif
   {
     pixels.fill(reverseColor, 0, pixels.numPixels());
     backColor = reverseColor;
@@ -148,24 +162,6 @@ bool isPinHigh(int pin)
   return result;
 }
 
-void runningLEDs()
-{
-  long off = pixels.Color(0, 0, 0);
-  for (int colorLoop = 0; colorLoop < 3; colorLoop++)
-  {
-    long color = pixels.Color((colorLoop == 0 ? 255 : 0), (colorLoop == 1 ? 255 : 0), (colorLoop == 2 ? 255 : 0));
-    for (int count = 0; count < pixels.numPixels(); count++)
-    {
-      pixels.clear();
-      pixels.setPixelColor((colorLoop%2 == 0 ? count : pixels.numPixels() - count - 1), color);
-      pixels.show();
-      delay(15);
-    }
-  }
-  pixels.clear();
-  pixels.show();
-}
-
 void handleRoot()
 {
   server.sendHeader("Cache-Control", "no-cache");
@@ -198,7 +194,7 @@ void handleSave()
   storeColor(index_html, "brakes", stopColor);
   storeColor(index_html, "turn", turnColor);
   storeColor(index_html, "reverse", reverseColor);
-  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
 }
 
 unsigned long extractHex(const String& json, const String& key)
