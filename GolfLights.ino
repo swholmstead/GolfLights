@@ -1,5 +1,5 @@
 // CONFIG PARAMETERS
-#define runningIdle 1 // add a running black pixel on idle
+// #define runningIdle 1 // add a running black pixel on idle
 // #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
 
 #include <Adafruit_NeoPixel.h>
@@ -53,7 +53,7 @@ void setup()
   stopColor    &= 0x00ffffff;
   turnColor    &= 0x00ffffff;
   reverseColor &= 0x00ffffff;
-  // Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
+  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
   storeColor(index_html, "running", idleColor);
   storeColor(index_html, "brakes", stopColor);
   storeColor(index_html, "turn", turnColor);
@@ -104,9 +104,9 @@ void processPixels()
   // default
   pixels.fill(idleColor, 0, pixels.numPixels());
 #ifdef runningIdle
-  pixels.setPixelColor(idlePosition, 0x000000);
+  pixels.setPixelColor(idlePosition / 3, 0x000000);
   idlePosition += idleDirection;
-  if (idlePosition <= 0 || idlePosition >= pixels.numPixels() - 1)
+  if (idlePosition <= 0 || idlePosition >= pixels.numPixels() * 3 - 1)
     idleDirection *= -1;
 #endif
 
