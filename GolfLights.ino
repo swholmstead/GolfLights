@@ -15,11 +15,10 @@
 #define brakePin       4
 
 // config for LED strip
-#define ledPin        D1
+#define ledPin        5
 #define numLEDs       116  // number of LEDs used in strip, needs to be an even number
 #define maxBright     127 // 0-255 max brightness; to prevent overcurrent, start low
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
-float pixelSize = 1.0;    // the physical distance that each LED represents in cm
 int blinkRate = 300;
 unsigned long idleColor;
 unsigned long stopColor;
