@@ -1,12 +1,16 @@
 // CONFIG PARAMETERS
 // #define runningIdle 1 // add a running black pixel on idle
-#define reverseActiveLow 1 // for Star EV, comment out for Yamaha
+// #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
+// #define wifiEnabled 1  // add web page to change colors
+// #define highDefLed 1 // 144 pixels/m
 
 #include <Adafruit_NeoPixel.h>
+#ifdef wifiEnabled
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include "golf_lights_html.h"
+#endif
 
 // config for wiring harness
 #define leftPin       12
@@ -15,9 +19,14 @@
 #define brakePin       4
 
 // config for LED strip
-#define ledPin        5
-#define numLEDs       116  // number of LEDs used in strip, needs to be an even number
-#define maxBright     127 // 0-255 max brightness; to prevent overcurrent, start low
+#define ledPin         5
+#ifdef highDefLed1
+#define numLEDs      116  // number of LEDs used in strip, needs to be an even number
+#define maxBright    127 // 0-255 max brightness; to prevent overcurrent, start low
+#else
+#define numLEDs       44
+#define maxBright    255 // 0-255 max brightness; to prevent overcurrent, start low
+#endif
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
 int blinkRate = 300;
 unsigned long idleColor;
@@ -25,11 +34,13 @@ unsigned long stopColor;
 unsigned long turnColor;
 unsigned long reverseColor;
 
+#ifdef wifiEnabled
 // WiFi config
 IPAddress local_IP(192, 168, 4, 1);
 IPAddress gateway(192, 168, 4, 1);
 IPAddress subnet(255, 255, 255,0);
 ESP8266WebServer server(80);
+#endif
 
 // general config
 unsigned int leftPosition = 0;
@@ -43,6 +54,7 @@ void setup()
   Serial.begin(74880);
   Serial.printf("\n\nStarting golf lights  LED: %d\n", numLEDs);
 
+#ifdef wifiEnabled
   EEPROM.begin(sizeof(idleColor) * 4);
   EEPROM.get(0, idleColor);
   EEPROM.get(4, stopColor);
@@ -52,11 +64,17 @@ void setup()
   stopColor    &= 0x00ffffff;
   turnColor    &= 0x00ffffff;
   reverseColor &= 0x00ffffff;
-  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
   storeColor(index_html, "running", idleColor);
   storeColor(index_html, "brakes", stopColor);
   storeColor(index_html, "turn", turnColor);
   storeColor(index_html, "reverse", reverseColor);
+#else
+  idleColor = 0x000080;
+  stopColor = 0xff0000;
+  turnColor = 0xff7f00;
+  reverseColor = 0xffffff;
+#endif
+  Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
 
   // set up wiring harness
   pinMode(leftPin, INPUT);
@@ -74,6 +92,7 @@ void setup()
   pixels.fill(idleColor, 0, pixels.numPixels());
   pixels.show();
 
+#ifdef wifiEnabled
   WiFi.mode(WIFI_AP);
   if (WiFi.softAP("GolfCart") && WiFi.softAPConfig(local_IP, gateway, subnet))
   {
@@ -87,14 +106,16 @@ void setup()
   {
     Serial.println("AP Config failed.");
   }
-  
+#endif
 }
 
 // Arduino loop function. Runs in CPU 1.
 void loop()
 {
   processPixels();
+#ifdef wifiEnabled
   server.handleClient();
+#endif
 }
 
 void processPixels()
@@ -162,6 +183,7 @@ bool isPinHigh(int pin)
   return result;
 }
 
+#ifdef wifiEnabled
 void handleRoot()
 {
   server.sendHeader("Cache-Control", "no-cache");
@@ -221,3 +243,4 @@ void storeColor(String& json, const String& key, unsigned long color)
   hexColor = hexColor.substring(hexColor.length() - 6);
   json = json.substring(0, start) + hexColor + json.substring(start);
 }
+#endif
