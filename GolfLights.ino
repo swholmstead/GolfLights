@@ -1,6 +1,6 @@
 // CONFIG PARAMETERS
 // #define runningIdle 1 // add a running black pixel on idle
-// #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
+#define reverseActiveLow 1 // for Star EV, comment out for Yamaha
 
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
@@ -16,8 +16,8 @@
 
 // config for LED strip
 #define ledPin        D1
-#define numLEDs       48  // number of LEDs used in strip, needs to be an even number
-#define maxBright     255 // 0-255 max brightness; to prevent overcurrent, start low
+#define numLEDs       116  // number of LEDs used in strip, needs to be an even number
+#define maxBright     127 // 0-255 max brightness; to prevent overcurrent, start low
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
 float pixelSize = 1.0;    // the physical distance that each LED represents in cm
 int blinkRate = 300;
@@ -104,9 +104,10 @@ void processPixels()
   // default
   pixels.fill(idleColor, 0, pixels.numPixels());
 #ifdef runningIdle
-  pixels.setPixelColor(idlePosition / 3, 0x000000);
+  pixels.setPixelColor(idlePosition / 2, 0xff0000);
+  pixels.setPixelColor(idlePosition / 2 + idleDirection, 0xff0000);
   idlePosition += idleDirection;
-  if (idlePosition <= 0 || idlePosition >= pixels.numPixels() * 3 - 1)
+  if (idlePosition <= 0 || idlePosition >= pixels.numPixels() * 2 - 1)
     idleDirection *= -1;
 #endif
 
