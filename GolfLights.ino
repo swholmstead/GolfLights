@@ -1,5 +1,6 @@
 // CONFIG PARAMETERS
 // #define runningIdle 1 // add a running black pixel on idle
+// #define christmasIdle 1 // Christmas themed background
 // #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
 // #define wifiEnabled 1  // add web page to change colors
 // #define highDefLed 1 // 144 pixels/m
@@ -120,22 +121,12 @@ void loop()
 
 void processPixels()
 {
-  unsigned long backColor = idleColor;
-  // default
-  pixels.fill(idleColor, 0, pixels.numPixels());
-#ifdef runningIdle
-  pixels.setPixelColor(idlePosition / 2, 0xff0000);
-  pixels.setPixelColor(idlePosition / 2 + idleDirection, 0xff0000);
-  idlePosition += idleDirection;
-  if (idlePosition <= 0 || idlePosition >= pixels.numPixels() * 2 - 1)
-    idleDirection *= -1;
-#endif
+  drawBackground();
 
   // check for brakes
   if (isPinHigh(brakePin))
   {
     pixels.fill(stopColor, 0, pixels.numPixels());
-    backColor = stopColor;
   }
   // check for reverse
 #ifdef reverseActiveLow
@@ -145,16 +136,13 @@ void processPixels()
 #endif
   {
     pixels.fill(reverseColor, 0, pixels.numPixels());
-    backColor = reverseColor;
   }
   // check for left turn
   if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= pixels.numPixels()))
   {
-    for (int position = 0; position < pixels.numPixels()/2; position++)
-    {
-      pixels.setPixelColor(pixels.numPixels()/2 - position - 1, (position <= leftPosition ? turnColor : backColor));
-    }
     leftPosition++;
+    int size = leftPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : leftPosition;
+    pixels.fill(turnColor, pixels.numPixels() / 2 - size, size);
   }
   else
   {
@@ -163,11 +151,9 @@ void processPixels()
   // check for right turn
   if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition <= pixels.numPixels()))
   {
-    for (int position = 0; position < pixels.numPixels()/2; position++)
-    {
-      pixels.setPixelColor(pixels.numPixels()/2 + position, (position <= rightPosition ? turnColor : backColor));
-    }
     rightPosition++;
+    int size = rightPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : rightPosition;
+    pixels.fill(turnColor, pixels.numPixels() / 2, size);
   }
   else
   {
@@ -175,6 +161,42 @@ void processPixels()
   }
   pixels.show();
   delay(blinkRate/pixels.numPixels());
+}
+
+void drawBackground()
+{
+  // default
+#ifndef christmasIdle
+  pixels.fill(idleColor, 0, pixels.numPixels());
+#endif
+#ifdef runningIdle
+#ifdef highDefLed
+  pixels.fill(0xff0000, idlePosition / 2, 4);
+#else
+  pixels.fill(0xff0000, idlePosition / 2, 2);
+#endif
+  idlePosition += idleDirection;
+  if (idlePosition <= 0 || idlePosition >= pixels.numPixels() * 2 - 1)
+    idleDirection *= -1;
+#endif
+#ifdef christmasIdle
+  for (int idlePosition = 0; idlePosition < pixels.numPixels(); idlePosition++)
+  {
+#ifdef highDefLed
+    switch (idlePosition / 4 % 2)
+#else
+    switch (idlePosition / 2 % 2)
+#endif
+    {
+      case 0:
+        pixels.setPixelColor(idlePosition, 0x1f0000);
+        break;
+      case 1:
+        pixels.setPixelColor(idlePosition, 0x001f00);
+        break;
+    }
+  }
+#endif
 }
 
 bool isPinHigh(int pin)
