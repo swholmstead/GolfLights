@@ -16,6 +16,7 @@
 // config for wiring harness
 #define leftPin       12
 #define rightPin      13
+#define buzzerPin      0
 #define reversePin    14
 #define brakePin       4
 
@@ -80,6 +81,8 @@ void setup()
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  digitalWrite(buzzerPin, LOW);
 #ifdef reverseActiveLow
   pinMode(reversePin, INPUT_PULLUP); // active low
 #else
@@ -121,6 +124,7 @@ void loop()
 
 void processPixels()
 {
+  uint8_t turning = LOW;
   drawBackground();
 
   // check for brakes
@@ -140,6 +144,7 @@ void processPixels()
   // check for left turn
   if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= pixels.numPixels()))
   {
+    turning = HIGH;
     leftPosition++;
     int size = leftPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : leftPosition;
     pixels.fill(turnColor, pixels.numPixels() / 2 - size, size);
@@ -151,6 +156,7 @@ void processPixels()
   // check for right turn
   if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition <= pixels.numPixels()))
   {
+    turning = HIGH;
     rightPosition++;
     int size = rightPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : rightPosition;
     pixels.fill(turnColor, pixels.numPixels() / 2, size);
@@ -160,6 +166,7 @@ void processPixels()
     rightPosition = 0;
   }
   pixels.show();
+  digitalWrite(buzzerPin, turning);
   delay(blinkRate/pixels.numPixels());
 }
 
