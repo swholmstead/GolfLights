@@ -14,14 +14,14 @@
 #endif
 
 // config for wiring harness
-#define leftPin       12
-#define rightPin      13
-#define buzzerPin      0
-#define reversePin    14
-#define brakePin       4
+#define leftPin       D6
+#define rightPin      D7
+#define buzzerPin     D1
+#define reversePin    D5
+#define brakePin      D2
 
 // config for LED strip
-#define ledPin         5
+#define ledPin        D3
 #ifdef highDefLed1
 #define numLEDs      116  // number of LEDs used in strip, needs to be an even number
 #define maxBright    127 // 0-255 max brightness; to prevent overcurrent, start low
