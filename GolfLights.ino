@@ -23,10 +23,10 @@
 // config for LED strip
 #define ledPin        D3
 #ifdef highDefLed
-#define numLEDs      116  // number of LEDs used in strip, needs to be an even number
+#define numLEDs      116 // number of LEDs used in strip, needs to be an even number
 #define maxBright    127 // 0-255 max brightness; to prevent overcurrent, start low
 #else
-#define numLEDs       44
+#define numLEDs       44 // standard 30 inches
 #define maxBright    255 // 0-255 max brightness; to prevent overcurrent, start low
 #endif
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
