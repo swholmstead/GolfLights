@@ -22,7 +22,7 @@
 
 // config for LED strip
 #define ledPin        D3
-#ifdef highDefLed1
+#ifdef highDefLed
 #define numLEDs      116  // number of LEDs used in strip, needs to be an even number
 #define maxBright    127 // 0-255 max brightness; to prevent overcurrent, start low
 #else
@@ -144,10 +144,15 @@ void processPixels()
   // check for left turn
   if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= pixels.numPixels()))
   {
-    turning = HIGH;
     leftPosition++;
     int size = leftPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : leftPosition;
     pixels.fill(turnColor, pixels.numPixels() / 2 - size, size);
+
+    // limit amount of time buzzer is on
+    if (leftPosition < pixels.numPixels() / 3)
+    {
+      turning = HIGH;
+    }
   }
   else
   {
@@ -156,10 +161,15 @@ void processPixels()
   // check for right turn
   if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition <= pixels.numPixels()))
   {
-    turning = HIGH;
     rightPosition++;
     int size = rightPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : rightPosition;
     pixels.fill(turnColor, pixels.numPixels() / 2, size);
+
+    // limit amount of time buzzer is on
+    if (rightPosition < pixels.numPixels() / 3)
+    {
+      turning = HIGH;
+    }
   }
   else
   {
