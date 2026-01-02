@@ -4,6 +4,7 @@
 // #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
 // #define wifiEnabled 1  // add web page to change colors
 // #define highDefLed 1 // 144 pixels/m
+#define buzzerControl 1 // Version 2 with software buzzer control
 
 #include <Adafruit_NeoPixel.h>
 #ifdef wifiEnabled
@@ -16,9 +17,13 @@
 // config for wiring harness
 #define leftPin       D6
 #define rightPin      D7
-#define buzzerPin     D1
 #define reversePin    D5
+#ifdef buzzerControl
+#define buzzerPin     D1
 #define brakePin      D2
+#else
+#define brakePin      D1
+#endif
 
 // config for LED strip
 #define ledPin        D3
@@ -81,8 +86,10 @@ void setup()
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
+  #ifdef buzzerControl
   pinMode(buzzerPin, OUTPUT);
   digitalWrite(buzzerPin, LOW);
+  #endif
 #ifdef reverseActiveLow
   pinMode(reversePin, INPUT_PULLUP); // active low
 #else
@@ -124,7 +131,9 @@ void loop()
 
 void processPixels()
 {
+#ifdef buzzerControl
   uint8_t turning = LOW;
+#endif
   drawBackground();
 
   // check for brakes
@@ -148,11 +157,13 @@ void processPixels()
     int size = leftPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : leftPosition;
     pixels.fill(turnColor, pixels.numPixels() / 2 - size, size);
 
+#ifdef buzzerControl
     // limit amount of time buzzer is on
     if (leftPosition <= pixels.numPixels() / 2)
     {
       turning = HIGH;
     }
+#endif
   }
   else
   {
@@ -165,18 +176,22 @@ void processPixels()
     int size = rightPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : rightPosition;
     pixels.fill(turnColor, pixels.numPixels() / 2, size);
 
+#ifdef buzzerControl
     // limit amount of time buzzer is on
     if (rightPosition <= pixels.numPixels() / 2)
     {
       turning = HIGH;
     }
+#endif
   }
   else
   {
     rightPosition = 0;
   }
   pixels.show();
+#ifdef buzzerControl
   digitalWrite(buzzerPin, turning);
+#endif
   delay(blinkRate/pixels.numPixels());
 }
 
