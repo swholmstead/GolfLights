@@ -4,7 +4,7 @@
 // #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
 // #define wifiEnabled 1  // add web page to change colors
 // #define highDefLed 1 // 144 pixels/m
-#define buzzerControl 1 // Version 2 with software buzzer control
+// #define buzzerControl 1 // Version 2 with software buzzer control
 
 #include <Adafruit_NeoPixel.h>
 #ifdef wifiEnabled
@@ -18,15 +18,15 @@
 #define leftPin       D6
 #define rightPin      D7
 #define reversePin    D5
-#ifdef buzzerControl
-#define buzzerPin     D1
 #define brakePin      D2
-#else
-#define brakePin      D1
-#endif
 
 // config for LED strip
+#ifdef buzzerControl
+#define buzzerPin     D1
 #define ledPin        D3
+#else
+#define ledPin        D1
+#endif
 #ifdef highDefLed
 #define numLEDs      116 // number of LEDs used in strip, needs to be an even number
 #define maxBright    127 // 0-255 max brightness; to prevent overcurrent, start low
@@ -54,6 +54,9 @@ unsigned int leftPosition = 0;
 unsigned int rightPosition = 0;
 unsigned int idlePosition = 0;
 int idleDirection = 1;
+int reverseCount = 0;
+int reverseDelay = blinkRate / 25;
+int reverseSize = numLEDs / 20;
 
 // Arduino setup function. Runs in CPU 1
 void setup()
@@ -100,7 +103,7 @@ void setup()
   // set up LED strip
   pixels.begin();
   pixels.setBrightness(maxBright);
-  pixels.fill(idleColor, 0, pixels.numPixels());
+  pixels.fill(idleColor, 0, numLEDs);
   pixels.show();
 
 #ifdef wifiEnabled
@@ -139,7 +142,7 @@ void processPixels()
   // check for brakes
   if (isPinHigh(brakePin))
   {
-    pixels.fill(stopColor, 0, pixels.numPixels());
+    pixels.fill(stopColor, 0, numLEDs);
   }
   // check for reverse
 #ifdef reverseActiveLow
@@ -148,18 +151,19 @@ void processPixels()
   if (isPinHigh(reversePin))
 #endif
   {
-    pixels.fill(reverseColor, 0, pixels.numPixels());
+    drawReverse();
   }
+
   // check for left turn
-  if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= pixels.numPixels()))
+  if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= numLEDs))
   {
     leftPosition++;
-    int size = leftPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : leftPosition;
-    pixels.fill(turnColor, pixels.numPixels() / 2 - size, size);
+    int size = leftPosition > numLEDs / 2 ? numLEDs / 2 : leftPosition;
+    pixels.fill(turnColor, numLEDs / 2 - size, size);
 
 #ifdef buzzerControl
     // limit amount of time buzzer is on
-    if (leftPosition <= pixels.numPixels() / 2)
+    if (leftPosition <= numLEDs / 2)
     {
       turning = HIGH;
     }
@@ -170,15 +174,15 @@ void processPixels()
     leftPosition = 0;
   }
   // check for right turn
-  if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition <= pixels.numPixels()))
+  if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition <= numLEDs))
   {
     rightPosition++;
-    int size = rightPosition > pixels.numPixels() / 2 ? pixels.numPixels() / 2 : rightPosition;
-    pixels.fill(turnColor, pixels.numPixels() / 2, size);
+    int size = rightPosition > numLEDs / 2 ? numLEDs / 2 : rightPosition;
+    pixels.fill(turnColor, numLEDs / 2, size);
 
 #ifdef buzzerControl
     // limit amount of time buzzer is on
-    if (rightPosition <= pixels.numPixels() / 2)
+    if (rightPosition <= numLEDs / 2)
     {
       turning = HIGH;
     }
@@ -192,14 +196,14 @@ void processPixels()
 #ifdef buzzerControl
   digitalWrite(buzzerPin, turning);
 #endif
-  delay(blinkRate/pixels.numPixels());
+  delay(blinkRate/numLEDs);
 }
 
 void drawBackground()
 {
   // default
 #ifndef christmasIdle
-  pixels.fill(idleColor, 0, pixels.numPixels());
+  pixels.fill(idleColor, 0, numLEDs);
 #endif
 #ifdef runningIdle
 #ifdef highDefLed
@@ -208,11 +212,11 @@ void drawBackground()
   pixels.fill(0xff0000, idlePosition / 2, 2);
 #endif
   idlePosition += idleDirection;
-  if (idlePosition <= 0 || idlePosition >= pixels.numPixels() * 2 - 1)
+  if (idlePosition <= 0 || idlePosition >= numLEDs * 2 - 1)
     idleDirection *= -1;
 #endif
 #ifdef christmasIdle
-  for (int idlePosition = 0; idlePosition < pixels.numPixels(); idlePosition++)
+  for (int idlePosition = 0; idlePosition < numLEDs; idlePosition++)
   {
 #ifdef highDefLed
     switch (idlePosition / 4 % 2)
@@ -229,6 +233,22 @@ void drawBackground()
     }
   }
 #endif
+}
+
+void drawReverse()
+{
+  unsigned int color1 = reverseCount < reverseDelay ? reverseColor : idleColor;
+  unsigned int color2 = reverseCount < reverseDelay ? idleColor : reverseColor;
+  for (int position=0; position < numLEDs; position += reverseSize)
+  {
+    pixels.fill(position % (reverseSize*2) ? color1 : color2, position, reverseSize);
+  }
+  // pixels.fill(reverseColor, 0, numLEDs);
+  reverseCount++;
+  if (reverseCount > reverseDelay * 2)
+  {
+    reverseCount = 0;
+  }
 }
 
 bool isPinHigh(int pin)
