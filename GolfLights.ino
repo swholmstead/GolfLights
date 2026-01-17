@@ -4,7 +4,9 @@
 // #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
 // #define wifiEnabled 1  // add web page to change colors
 // #define highDefLed 1 // 144 pixels/m
-// #define buzzerControl 1 // Version 2 with software buzzer control
+// #define pcbBuzzer 1 // PCB version 2 with software buzzer control
+// #define turnBuzzer 1 // software turn buzzer
+// #define backupBuzzer 1 // software reverse buzzer
 
 #include <Adafruit_NeoPixel.h>
 #ifdef wifiEnabled
@@ -21,7 +23,7 @@
 #define brakePin      D2
 
 // config for LED strip
-#ifdef buzzerControl
+#ifdef pcbBuzzer
 #define buzzerPin     D1
 #define ledPin        D3
 #else
@@ -57,6 +59,10 @@ int idleDirection = 1;
 int reverseCount = 0;
 int reverseDelay = blinkRate / 25;
 int reverseSize = numLEDs / 20;
+#ifdef pcbBuzzer
+int buzzerCount = 0;
+uint8_t buzzer = LOW;
+#endif
 
 // Arduino setup function. Runs in CPU 1
 void setup()
@@ -89,10 +95,10 @@ void setup()
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
-  #ifdef buzzerControl
+#ifdef pcbBuzzer
   pinMode(buzzerPin, OUTPUT);
   digitalWrite(buzzerPin, LOW);
-  #endif
+#endif
 #ifdef reverseActiveLow
   pinMode(reversePin, INPUT_PULLUP); // active low
 #else
@@ -134,8 +140,8 @@ void loop()
 
 void processPixels()
 {
-#ifdef buzzerControl
-  uint8_t turning = LOW;
+#ifdef turnBuzzer
+  buzzer = LOW;
 #endif
   drawBackground();
 
@@ -152,6 +158,14 @@ void processPixels()
 #endif
   {
     drawReverse();
+#ifdef backupBuzzer
+    buzzerCount++;
+    if (buzzerCount >= 65)
+    {
+      buzzer = (buzzer == LOW ? HIGH : LOW);
+      buzzerCount = 0;
+    }
+#endif
   }
 
   // check for left turn
@@ -161,11 +175,11 @@ void processPixels()
     int size = leftPosition > numLEDs / 2 ? numLEDs / 2 : leftPosition;
     pixels.fill(turnColor, numLEDs / 2 - size, size);
 
-#ifdef buzzerControl
+#ifdef turnBuzzer
     // limit amount of time buzzer is on
     if (leftPosition <= numLEDs / 2)
     {
-      turning = HIGH;
+      buzzer = HIGH;
     }
 #endif
   }
@@ -180,11 +194,11 @@ void processPixels()
     int size = rightPosition > numLEDs / 2 ? numLEDs / 2 : rightPosition;
     pixels.fill(turnColor, numLEDs / 2, size);
 
-#ifdef buzzerControl
+#ifdef turnBuzzer
     // limit amount of time buzzer is on
     if (rightPosition <= numLEDs / 2)
     {
-      turning = HIGH;
+      buzzer = HIGH;
     }
 #endif
   }
@@ -193,8 +207,8 @@ void processPixels()
     rightPosition = 0;
   }
   pixels.show();
-#ifdef buzzerControl
-  digitalWrite(buzzerPin, turning);
+#ifdef pcbBuzzer
+  digitalWrite(buzzerPin, buzzer);
 #endif
   delay(blinkRate/numLEDs);
 }
