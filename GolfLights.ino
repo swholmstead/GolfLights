@@ -140,9 +140,6 @@ void loop()
 
 void processPixels()
 {
-#ifdef turnBuzzer
-  buzzer = LOW;
-#endif
   drawBackground();
 
   // check for brakes
@@ -167,6 +164,15 @@ void processPixels()
     }
 #endif
   }
+#ifdef backupBuzzer
+  else
+  {
+    buzzer = LOW;
+  }
+#endif
+#ifdef turnBuzzer
+  buzzer = LOW;
+#endif
 
   // check for left turn
   if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= numLEDs))
