@@ -1,11 +1,7 @@
 // CONFIG PARAMETERS
-// #define runningIdle 1 // add a running black pixel on idle
-// #define christmasIdle 1 // Christmas themed background
 // #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
 // #define wifiEnabled 1  // add web page to change colors
 // #define highDefLed 1 // 144 pixels/m
-// #define pcbBuzzer 1 // PCB version 2 with software buzzer control
-// #define turnBuzzer 1 // software turn buzzer
 // #define backupBuzzer 1 // software reverse buzzer
 
 #include <Adafruit_NeoPixel.h>
@@ -23,7 +19,7 @@
 #define brakePin      D2
 
 // config for LED strip
-#ifdef pcbBuzzer
+#ifdef backupBuzzer
 #define buzzerPin     D1
 #define ledPin        D3
 #else
@@ -59,9 +55,10 @@ int idleDirection = 1;
 int reverseCount = 0;
 int reverseDelay = blinkRate / 25;
 int reverseSize = numLEDs / 20;
-#ifdef pcbBuzzer
+#ifdef backupBuzzer
 int buzzerCount = 0;
 uint8_t buzzer = LOW;
+uint8_t previousBuzzer = LOW;
 #endif
 
 // Arduino setup function. Runs in CPU 1
@@ -95,7 +92,7 @@ void setup()
   // set up wiring harness
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
-#ifdef pcbBuzzer
+#ifdef backupBuzzer
   pinMode(buzzerPin, OUTPUT);
   digitalWrite(buzzerPin, LOW);
 #endif
@@ -140,13 +137,6 @@ void loop()
 
 void processPixels()
 {
-  drawBackground();
-
-  // check for brakes
-  if (isPinHigh(brakePin))
-  {
-    pixels.fill(stopColor, 0, numLEDs);
-  }
   // check for reverse
 #ifdef reverseActiveLow
   if (!isPinHigh(reversePin))
@@ -164,95 +154,59 @@ void processPixels()
     }
 #endif
   }
-#ifdef backupBuzzer
+  // check for brakes
+  else if (isPinHigh(brakePin))
+  {
+    pixels.fill(stopColor, 0, numLEDs);
+  }
+  // draw normal background
   else
   {
+    drawBackground();
+#ifdef backupBuzzer
     buzzer = LOW;
+    buzzerCount = 0;
+#endif
   }
-#endif
-#ifdef turnBuzzer
-  buzzer = LOW;
-#endif
 
   // check for left turn
-  if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= numLEDs))
+  if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= numLEDs * 2 / 3))
   {
     leftPosition++;
-    int size = leftPosition > numLEDs / 2 ? numLEDs / 2 : leftPosition;
+    int size = (leftPosition > numLEDs / 2) ? numLEDs / 2 : leftPosition;
     pixels.fill(turnColor, numLEDs / 2 - size, size);
-
-#ifdef turnBuzzer
-    // limit amount of time buzzer is on
-    if (leftPosition <= numLEDs / 2)
-    {
-      buzzer = HIGH;
-    }
-#endif
   }
   else
   {
     leftPosition = 0;
   }
   // check for right turn
-  if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition <= numLEDs))
+  if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition <= numLEDs * 2 / 3))
   {
     rightPosition++;
-    int size = rightPosition > numLEDs / 2 ? numLEDs / 2 : rightPosition;
+    int size = (rightPosition > numLEDs / 2) ? numLEDs / 2 : rightPosition;
     pixels.fill(turnColor, numLEDs / 2, size);
-
-#ifdef turnBuzzer
-    // limit amount of time buzzer is on
-    if (rightPosition <= numLEDs / 2)
-    {
-      buzzer = HIGH;
-    }
-#endif
   }
   else
   {
     rightPosition = 0;
   }
+
+  // send pixels to LED strip
   pixels.show();
-#ifdef pcbBuzzer
-  digitalWrite(buzzerPin, buzzer);
+#ifdef backupBuzzer
+  if (buzzer != previousBuzzer)
+  {
+    digitalWrite(buzzerPin, buzzer);
+    previousBuzzer = buzzer;
+  }
 #endif
   delay(blinkRate/numLEDs);
 }
 
 void drawBackground()
 {
-  // default
-#ifndef christmasIdle
   pixels.fill(idleColor, 0, numLEDs);
-#endif
-#ifdef runningIdle
-#ifdef highDefLed
-  pixels.fill(0xff0000, idlePosition / 2, 4);
-#else
-  pixels.fill(0xff0000, idlePosition / 2, 2);
-#endif
-  idlePosition += idleDirection;
-  if (idlePosition <= 0 || idlePosition >= numLEDs * 2 - 1)
-    idleDirection *= -1;
-#endif
-#ifdef christmasIdle
-  for (int idlePosition = 0; idlePosition < numLEDs; idlePosition++)
-  {
-#ifdef highDefLed
-    switch (idlePosition / 4 % 2)
-#else
-    switch (idlePosition / 2 % 2)
-#endif
-    {
-      case 0:
-        pixels.setPixelColor(idlePosition, 0x1f0000);
-        break;
-      case 1:
-        pixels.setPixelColor(idlePosition, 0x001f00);
-        break;
-    }
-  }
-#endif
 }
 
 void drawReverse()
