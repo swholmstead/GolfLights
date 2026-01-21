@@ -82,7 +82,8 @@ void setup()
   storeColor(index_html, "turn", turnColor);
   storeColor(index_html, "reverse", reverseColor);
 #else
-  idleColor = 0x000080;
+  idleColor = 0x000080; // blue
+  // idleColor = 0x004040; // teal
   stopColor = 0xff0000;
   turnColor = 0xff7f00;
   reverseColor = 0xffffff;
@@ -158,6 +159,10 @@ void processPixels()
   else if (isPinHigh(brakePin))
   {
     pixels.fill(stopColor, 0, numLEDs);
+#ifdef backupBuzzer
+    buzzer = LOW;
+    buzzerCount = 0;
+#endif
   }
   // draw normal background
   else
