@@ -147,8 +147,6 @@ void processPixels()
 #endif
   {
     drawReverse();
-    leftPosition = 0;
-    rightPosition = 0;
 #ifdef backupBuzzer
     buzzerCount++;
     if (buzzerCount >= 65)
