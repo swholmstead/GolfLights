@@ -3,6 +3,7 @@
 // #define wifiEnabled 1  // add web page to change colors
 // #define highDefLed 1 // 144 pixels/m
 // #define backupBuzzer 1 // software reverse buzzer
+// #define animateTurn 1 // moving LEDs for turn signals
 
 #include <Adafruit_NeoPixel.h>
 #ifdef wifiEnabled
@@ -167,7 +168,7 @@ void processPixels()
   // draw normal background
   else
   {
-    drawBackground();
+    pixels.fill(idleColor, 0, numLEDs);
 #ifdef backupBuzzer
     buzzer = LOW;
     buzzerCount = 0;
@@ -175,22 +176,30 @@ void processPixels()
   }
 
   // check for left turn
-  if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition <= numLEDs * 2 / 3))
+  if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition < numLEDs))
   {
     leftPosition++;
-    int size = (leftPosition > numLEDs / 2) ? numLEDs / 2 : leftPosition;
+  #ifdef animateTurn
+    int size = (leftPosition > numLEDs / 2) ? numLEDs / 2: leftPosition;
     pixels.fill(turnColor, numLEDs / 2 - size, size);
+  #else
+    pixels.fill(turnColor, 0, numLEDs / 2);
+  #endif
   }
   else
   {
     leftPosition = 0;
   }
   // check for right turn
-  if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition <= numLEDs * 2 / 3))
+  if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition < numLEDs))
   {
     rightPosition++;
-    int size = (rightPosition > numLEDs / 2) ? numLEDs / 2 : rightPosition;
+#ifdef animateTurn
+    int size = (rightPosition > numLEDs / 2) ? numLEDs / 2: rightPosition;
     pixels.fill(turnColor, numLEDs / 2, size);
+#else
+    pixels.fill(turnColor, numLEDs / 2, numLEDs / 2);
+#endif
   }
   else
   {
@@ -207,11 +216,6 @@ void processPixels()
   }
 #endif
   delay(blinkRate/numLEDs);
-}
-
-void drawBackground()
-{
-  pixels.fill(idleColor, 0, numLEDs);
 }
 
 void drawReverse()
