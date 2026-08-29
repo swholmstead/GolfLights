@@ -7,10 +7,10 @@
 #include <Adafruit_NeoPixel.h>
 
 // config for wiring harness
-#define leftPin       D6
-#define rightPin      D7
-#define reversePin    D0
-#define brakePin      D2
+#define leftPin       D7
+#define rightPin      D6
+#define reversePin    D2
+#define brakePin      D0
 #define lightsPin     D5
 
 // config for LED strip
