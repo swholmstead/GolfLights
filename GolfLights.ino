@@ -7,11 +7,11 @@
 #include <Adafruit_NeoPixel.h>
 
 // config for wiring harness
-#define leftPin       D7
-#define rightPin      D6
-#define reversePin    D2
-#define brakePin      D0
-#define lightsPin     D5
+#define leftPin       D7 // Yellow
+#define rightPin      D6 // Green
+#define reversePin    D2 // White
+#define brakePin      D0 // Orange
+#define lightsPin     D5 // Blue
 
 // config for LED strip
 #define buzzerPin     D1
