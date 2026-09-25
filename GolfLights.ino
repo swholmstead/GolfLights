@@ -135,7 +135,7 @@ void processPixels()
     leftPosition++;
   #ifdef animateTurn
     int size = (leftPosition > numLEDs / 2) ? numLEDs / 2: leftPosition;
-    pixels.fill(turnColor, numLEDs / 2 - size, size);
+    pixels.fill(turnColor, 0, size);
   #else
     pixels.fill(turnColor, 0, numLEDs / 2);
   #endif
@@ -150,7 +150,7 @@ void processPixels()
     rightPosition++;
 #ifdef animateTurn
     int size = (rightPosition > numLEDs / 2) ? numLEDs / 2: rightPosition;
-    pixels.fill(turnColor, numLEDs / 2, size);
+    pixels.fill(turnColor, numLEDs - size, size);
 #else
     pixels.fill(turnColor, numLEDs / 2, numLEDs / 2);
 #endif
