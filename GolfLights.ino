@@ -118,6 +118,10 @@ void processPixels()
   else if (isPinHigh(lightsPin))
   {
     pixels.fill(lightsColor, 0, numLEDs);
+#ifdef backupBuzzer
+    buzzer = LOW;
+    buzzerCount = 0;
+#endif
   }
   // draw normal background
   else
@@ -134,8 +138,11 @@ void processPixels()
   {
     leftPosition++;
   #ifdef animateTurn
-    int size = (leftPosition > numLEDs / 2) ? numLEDs / 2: leftPosition;
-    pixels.fill(turnColor, 0, size);
+    int size = (leftPosition > numLEDs / 2) ? 0: numLEDs / 2 - leftPosition;
+    if (size > 0)
+    {
+      pixels.fill(turnColor, 0, size);
+    }
   #else
     pixels.fill(turnColor, 0, numLEDs / 2);
   #endif
@@ -149,8 +156,11 @@ void processPixels()
   {
     rightPosition++;
 #ifdef animateTurn
-    int size = (rightPosition > numLEDs / 2) ? numLEDs / 2: rightPosition;
-    pixels.fill(turnColor, numLEDs - size, size);
+    int size = (rightPosition > numLEDs / 2) ? 0 : numLEDs / 2 - rightPosition;
+    if (size > 0)
+    {
+      pixels.fill(turnColor, numLEDs - size, size);
+    }
 #else
     pixels.fill(turnColor, numLEDs / 2, numLEDs / 2);
 #endif
