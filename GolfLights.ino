@@ -1,6 +1,5 @@
 // CONFIG PARAMETERS
 #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
-#define highDefLed 1 // 144 pixels/m
 // #define backupBuzzer 1 // software reverse buzzer
 #define animateTurn 1 // moving LEDs for turn signals
 
@@ -16,15 +15,10 @@
 // config for LED strip
 #define buzzerPin     D1
 #define ledPin        D3
-#ifdef highDefLed
 #define numLEDs      116 // number of LEDs used in strip, needs to be an even number
 #define maxBright    127 // 0-255 max brightness; to prevent overcurrent, start low
-#else
-#define numLEDs       44 // standard 30 inches
-#define maxBright    255 // 0-255 max brightness; to prevent overcurrent, start low
-#endif
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
-int blinkRate = 300;
+int blinkDelay = 600;
 unsigned long idleColor;
 unsigned long stopColor;
 unsigned long turnColor;
@@ -37,10 +31,11 @@ unsigned int rightPosition = 0;
 unsigned int idlePosition = 0;
 int idleDirection = 1;
 int reverseCount = 0;
-int reverseDelay = blinkRate / 25;
+int reverseDelay = blinkDelay / 50;
 int reverseSize = numLEDs / 20;
 #ifdef backupBuzzer
 int buzzerCount = 0;
+int buzzerDelay = 32;
 uint8_t buzzer = LOW;
 uint8_t previousBuzzer = LOW;
 #endif
@@ -98,7 +93,7 @@ void processPixels()
     drawReverse();
 #ifdef backupBuzzer
     buzzerCount++;
-    if (buzzerCount >= 65)
+    if (buzzerCount > buzzerDelay)
     {
       buzzer = (buzzer == LOW ? HIGH : LOW);
       buzzerCount = 0;
@@ -136,7 +131,7 @@ void processPixels()
   // check for left turn
   if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition < numLEDs))
   {
-    leftPosition++;
+    leftPosition += 2;
   #ifdef animateTurn
     int size = (leftPosition > numLEDs / 2) ? 0: numLEDs / 2 - leftPosition + 10;
     size = size > numLEDs / 2 ? numLEDs / 2 : size;
@@ -155,7 +150,7 @@ void processPixels()
   // check for right turn
   if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition < numLEDs))
   {
-    rightPosition++;
+    rightPosition += 2;
 #ifdef animateTurn
     int size = (rightPosition > numLEDs / 2) ? 0 : numLEDs / 2 - rightPosition + 10;
     size = size > numLEDs / 2 ? numLEDs / 2 : size;
@@ -181,7 +176,7 @@ void processPixels()
     previousBuzzer = buzzer;
   }
 #endif
-  delay(blinkRate/numLEDs);
+  delay(blinkDelay / numLEDs);
 }
 
 void drawReverse()
