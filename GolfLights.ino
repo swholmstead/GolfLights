@@ -31,7 +31,7 @@ unsigned int rightPosition = 0;
 unsigned int idlePosition = 0;
 int idleDirection = 1;
 int reverseCount = 0;
-int reverseDelay = blinkDelay / 50;
+int reverseDelay = blinkDelay / 64;
 int reverseSize = numLEDs / 20;
 #ifdef backupBuzzer
 int buzzerCount = 0;
