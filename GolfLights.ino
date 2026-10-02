@@ -1,6 +1,6 @@
 // CONFIG PARAMETERS
 #define reverseActiveLow 1 // for Star EV, comment out for Yamaha
-// #define backupBuzzer 1 // software reverse buzzer
+#define backupBuzzer 1 // software reverse buzzer
 #define animateTurn 1 // moving LEDs for turn signals
 
 #include <Adafruit_NeoPixel.h>
@@ -16,7 +16,7 @@
 #define buzzerPin     D1
 #define ledPin        D3
 #define numLEDs      116 // number of LEDs used in strip, needs to be an even number
-#define maxBright    127 // 0-255 max brightness; to prevent overcurrent, start low
+#define maxBright    255 // 0-255 max brightness; to prevent overcurrent, start low
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numLEDs, ledPin, NEO_GRB + NEO_KHZ800);
 int blinkDelay = 600;
 unsigned long idleColor;
@@ -49,7 +49,7 @@ void setup()
   idleColor = 0x000000;    // black
   stopColor = 0xff0000;    // red
   turnColor = 0xff7f00;    // amber
-  reverseColor = 0xffffff; // white
+  reverseColor = 0xbfbfbf; // white
   lightsColor = 0x200000;  // faint red
   Serial.printf("idle: %06lx  stop: %06lx  turn: %06lx  reverse: %06lx\n", idleColor, stopColor, turnColor, reverseColor);
 
@@ -131,13 +131,12 @@ void processPixels()
   // check for left turn
   if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition < numLEDs))
   {
-    leftPosition += 2;
+    leftPosition++;
   #ifdef animateTurn
-    int size = (leftPosition > numLEDs / 2) ? 0: numLEDs / 2 - leftPosition + 10;
-    size = size > numLEDs / 2 ? numLEDs / 2 : size;
+    int size = (leftPosition > numLEDs / 4) ? numLEDs / 4 : leftPosition;
     if (size > 0)
     {
-      pixels.fill(turnColor, 0, size);
+      pixels.fill(turnColor, numLEDs / 4 - size, numLEDs / 4 + size);
     }
   #else
     pixels.fill(turnColor, 0, numLEDs / 2);
@@ -150,13 +149,12 @@ void processPixels()
   // check for right turn
   if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition < numLEDs))
   {
-    rightPosition += 2;
+    rightPosition++;
 #ifdef animateTurn
-    int size = (rightPosition > numLEDs / 2) ? 0 : numLEDs / 2 - rightPosition + 10;
-    size = size > numLEDs / 2 ? numLEDs / 2 : size;
+    int size = (rightPosition > numLEDs / 4) ? numLEDs : rightPosition;
     if (size > 0)
     {
-      pixels.fill(turnColor, numLEDs - size, size);
+      pixels.fill(turnColor, numLEDs * 3 / 2 + size, numLEDs / 4 + size);
     }
 #else
     pixels.fill(turnColor, numLEDs / 2, numLEDs / 2);
