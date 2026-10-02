@@ -32,7 +32,7 @@ unsigned int idlePosition = 0;
 int idleDirection = 1;
 int reverseCount = 0;
 int reverseDelay = blinkDelay / 64;
-int reverseSize = numLEDs / 20;
+int reverseSize = 4;
 #ifdef backupBuzzer
 int buzzerCount = 0;
 int buzzerDelay = 32;
@@ -129,7 +129,7 @@ void processPixels()
   }
 
   // check for left turn
-  if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition < numLEDs))
+  if (isPinHigh(leftPin) || (leftPosition > 0 && leftPosition < numLEDs / 2))
   {
     leftPosition++;
   #ifdef animateTurn
@@ -147,14 +147,14 @@ void processPixels()
     leftPosition = 0;
   }
   // check for right turn
-  if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition < numLEDs))
+  if (isPinHigh(rightPin) || (rightPosition > 0 && rightPosition < numLEDs / 2))
   {
     rightPosition++;
 #ifdef animateTurn
-    int size = (rightPosition > numLEDs / 4) ? numLEDs : rightPosition;
+    int size = (rightPosition > numLEDs / 4) ? numLEDs / 4 : rightPosition;
     if (size > 0)
     {
-      pixels.fill(turnColor, numLEDs * 3 / 2 + size, numLEDs / 4 + size);
+      pixels.fill(turnColor, numLEDs / 2, numLEDs / 4 + size);
     }
 #else
     pixels.fill(turnColor, numLEDs / 2, numLEDs / 2);
